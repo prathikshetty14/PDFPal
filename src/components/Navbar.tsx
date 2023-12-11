@@ -1,11 +1,15 @@
 import MaxWidthWrapper from "./MaxWidthWrapper"
 import Link from "../../node_modules/next/link"
 import { buttonVariants } from "./ui/button"
-import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/server"
+import { LoginLink, getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server"
 import { ArrowRight } from "lucide-react"
+import Dashboard from '@/components/Dashboard';
 
-const Navbar = () => {
+const Navbar = async () => {
+    const {getUser} = getKindeServerSession();
+    const user = await getUser();
+
     return(
         <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all">
             <MaxWidthWrapper>
@@ -25,12 +29,26 @@ const Navbar = () => {
                                 Pricing
                             </Link>
 
-                            <LoginLink className={buttonVariants({
-                                variant: "ghost",
-                                size: "sm"
-                            })}>
-                                Login
-                            </LoginLink>
+                            {user === null ? (
+
+                                <LoginLink className={buttonVariants({
+                                    variant: "ghost",
+                                    size: "sm"
+                                })}>
+                                    Login
+                                </LoginLink>
+
+                            ) : (
+
+                                <Link href="/dashboard" className={buttonVariants({
+                                    variant: "ghost",
+                                    size: "sm"
+                                })}>
+                                    Dashboard
+                                </Link>
+                            )}
+
+
 
                             <RegisterLink className={buttonVariants({
                                 size: "sm"
