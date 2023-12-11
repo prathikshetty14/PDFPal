@@ -40,7 +40,7 @@ const UploadDropZone = () => {
                 }
                 return prevProgress + 5
             })
-        }, 200)
+        }, 100)
         return interval
     }
 
