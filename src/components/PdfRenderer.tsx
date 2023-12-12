@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, ChevronUp, Loader2, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, RotateCw, ZoomInIcon } from "lucide-react";
 import {Document, Page, pdfjs} from "react-pdf";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 import SimpleBar from "simplebar-react";
+import { PDFfullscreen } from "./PDFfullscreen";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
 
@@ -35,14 +36,7 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
     const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
 
     const [scale, setScale] = useState<number>(1)
-
-    const handleInputFocus = () => {
-        setIsInputFocused(true);
-    };
-    
-    const handleInputBlur = () => {
-        setIsInputFocused(false);
-    };
+    const [rotation, setRotation] = useState<number>(0)
 
     const CustomPageValidator = z.object({
         page: z.string().refine((num) => Number(num) > 0 && Number(num) <= numPages!)
@@ -77,6 +71,7 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                 disabled={currPage <= 1}
                 onClick={() =>  {
                     setCurrPage((prev) => (prev - 1 > 1 ? prev - 1 : 1));
+                    setValue("page", String(currPage - 1))
                 }} 
                 variant="ghost" 
                 aria-label="previous page"
@@ -89,14 +84,11 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                     <Input 
                     {...register("page")}
                     className={cn("w-12 h-8", errors.page && "focus-visible:ring-red-500")}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
                     onKeyDown={(e) => {
                         if(e.key === "Enter"){
                             handleSubmit(handlePageSubmit)();
                         }
                     }}
-                    value={isInputFocused ? undefined : String(currPage)}
                     />
                     <p className="text-zinc-700 text-sm space-x-1">
                         <span>/</span>
@@ -109,6 +101,7 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                 disabled={numPages === undefined || currPage === numPages}
                 onClick={() =>  {
                     setCurrPage((prev) => prev + 1 > numPages! ? numPages! : prev + 1);
+                    setValue("page", String(currPage + 1))
                 }} 
                 variant="ghost" 
                 aria-label="previous page"
@@ -125,7 +118,7 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                         aria-label="zoom" 
                         variant="ghost"
                         >
-                            <Search className="h-4 w-4"/>
+                            <ZoomInIcon className="h-4 w-4"/>
                             {scale * 100}%<ChevronDown className="h-3 w-3 opacity-50"/>
                         </Button>
                     </DropdownMenuTrigger>
@@ -145,6 +138,16 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Button 
+                onClick={() => setRotation((prev) => prev + 90)}
+                aria-label="rotate 90 degrees" 
+                variant="ghost"
+                >
+                    <RotateCw className="h-4 w-4" />
+                </Button>
+
+                <PDFfullscreen fileUrl={url}/>
             </div>
         </div>
 
@@ -171,6 +174,7 @@ const PdfRenderer = ({url}: PdfRendererProps) => {
                         width={width ? width : 750}  
                         pageNumber={currPage}
                         scale={scale}
+                        rotate={rotation}
                         />
                     </Document>
                 </div>
